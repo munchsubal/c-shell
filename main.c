@@ -30,13 +30,17 @@ int main() {
         /* Strip trailing CR/LF from fgets */
         input[strcspn(input, "\r\n")] = '\0';
 
-        /* If the user just hit Enter, reprint prompt */
+        // If the user just hit Enter, reprint prompt
         if (input[0] == '\0') {
             continue;
         }
 
-        token_t* tokens = tokenize_input(input);
-        debug_print_tokens(tokens);
+        token_t* token_stream = tokenize_input(input);
+        // debug_print_tokens(tokens);
+
+        
+        
+
     }
     return 0;
 }
