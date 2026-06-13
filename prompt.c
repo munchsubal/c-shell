@@ -3,13 +3,13 @@
 #include <string.h>
 #include <stdio.h>
 
-static char HOME_DIR[1024];
+extern char HOME_DIR[1024];
 
 void init_home_dir() {
     getcwd(HOME_DIR, sizeof(HOME_DIR));
 }
 
-void print_prompt() {
+void show_prompt() {
     char username[1024];
     getlogin_r(username, sizeof(username));
 
@@ -26,12 +26,5 @@ void print_prompt() {
     else {
         printf("<%s@%s:%s> ", username, hostname, cwd);
     }
-}
-
-void read_input() {
-    char input[1024];
-    fgets(input, sizeof(input), stdin);
-    
-    // Remove trailing newline character
-    input[strcspn(input, "\n")] = '\0';
+    fflush(stdout);
 }
