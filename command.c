@@ -1,5 +1,7 @@
 #include "command.h"
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 cmd_group_t* init_shell_cmd() {
     cmd_group_t* head = (cmd_group_t*)malloc(sizeof(cmd_group_t));
