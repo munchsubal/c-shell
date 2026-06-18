@@ -2,17 +2,20 @@
 #include "token.h"
 #include "command.h"
 #include "parser.h"
+#include "builtins.h"
+#include "execute.h"
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
-#define HOME_DIR_SIZE 1024
-#define INPUT_BUFFER_SIZE 1024
-
-char HOME_DIR[HOME_DIR_SIZE];
-char input[INPUT_BUFFER_SIZE];
+#define INPUT_BUFFER_SIZE 4096
+char HOME_DIR[PATH_MAX];
+char input[PATH_MAX];
 
 int main() {
     init_home_dir();
+
+    shell_state_t shell_state = { .prev_dir = NULL, .prev_dir_valid = false }; 
     
     while (1) {
         show_prompt();
@@ -43,22 +46,15 @@ int main() {
         cmd_group_t* shell_cmd = NULL;
         if (token_stream != NULL) {
             shell_cmd = parse_shell_cmd(token_stream);
-            debug_print_shell_cmd(shell_cmd);
+            // debug_print_shell_cmd(shell_cmd);
             free_token_list(token_stream);
         }
         else {
             continue;
         }
 
-
-        // if (shell_cmd == NULL) {
-        //     fprintf(stderr, "Failed to parse command\n");
-        // } 
-        // else {
-        //     // For now, just print the parsed command structure
-        //     // In a full implementation, we would execute the commands here
-        //     printf("Parsed command successfully\n");
-        // }
+        execute_shell_cmd(shell_cmd, &shell_state); 
+        free_cmd_group(shell_cmd);
     }
     return 0;
 }

@@ -2,8 +2,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
-extern char HOME_DIR[1024];
+extern char HOME_DIR[PATH_MAX];
 
 void init_home_dir() {
     getcwd(HOME_DIR, sizeof(HOME_DIR));
