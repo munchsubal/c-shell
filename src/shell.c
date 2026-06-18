@@ -1,9 +1,9 @@
-#include "prompt.h"
-#include "token.h"
-#include "command.h"
-#include "parser.h"
-#include "builtins.h"
-#include "execute.h"
+#include "../include/prompt.h"
+#include "../include/token.h"
+#include "../include/command.h"
+#include "../include/parser.h"
+#include "../include/builtins.h"
+#include "../include/execute.h"
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>

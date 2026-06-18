@@ -1,6 +1,6 @@
-#include "parser.h"
-#include "token.h"
-#include "command.h"
+#include "../include/parser.h"
+#include "../include/token.h"
+#include "../include/command.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,6 +1,6 @@
-#include "builtins.h"
-#include "command.h"
-#include "shell.h"
+#include "../include/builtins.h"
+#include "../include/command.h"
+#include "../include/shell.h"
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>

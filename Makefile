@@ -8,7 +8,7 @@ CFLAGS = -std=c99 \
           -fno-asm
 
 all:
-	$(CC) $(CFLAGS) shell.c prompt.c token.c command.c parser.c builtins.c execute.c -o shell.out
+	$(CC) $(CFLAGS) src/shell.c src/prompt.c src/token.c src/command.c src/parser.c src/builtins.c src/execute.c -o shell.out
 
 clean:
 	rm -f shell.out
