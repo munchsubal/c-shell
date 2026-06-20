@@ -10,5 +10,6 @@ typedef struct {
 } shell_state_t;
 
 int builtins_hop(shell_state_t* shell_state, const arg_node_t* args);
+int builtins_reveal(shell_state_t* shell_state, const arg_node_t* args);
 
 #endif // BUILTINS_H
