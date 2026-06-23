@@ -11,9 +11,11 @@
 #define INPUT_BUFFER_SIZE 4096
 char HOME_DIR[PATH_MAX];
 char input[PATH_MAX];
+char HISTORY_FILE_PATH[PATH_MAX];
 
 int main() {
     init_home_dir();
+    snprintf(HISTORY_FILE_PATH, sizeof(HISTORY_FILE_PATH), "%s/history.txt", HOME_DIR);
 
     shell_state_t shell_state = { .prev_dir = NULL, .prev_dir_valid = false }; 
     
@@ -54,6 +56,9 @@ int main() {
         }
 
         execute_shell_cmd(shell_cmd, &shell_state); 
+        if (!contains_log_command(shell_cmd)) {
+            add_command_to_history(input);
+        }
         free_cmd_group(shell_cmd);
     }
     return 0;

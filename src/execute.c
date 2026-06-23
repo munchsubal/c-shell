@@ -44,6 +44,9 @@ int execute_builtins(shell_state_t *shell_state, atomic_cmd_t *cmd) {
 	if (strcmp(cmd->args->arg, "reveal") == 0) {
 		return builtins_reveal(shell_state, cmd->args);
 	}
+	if (strcmp(cmd->args->arg, "log") == 0) {
+		return builtins_log(shell_state, cmd->args);
+	}
 
 	return 0;
 }
