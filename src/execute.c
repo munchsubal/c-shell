@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -31,6 +32,33 @@ char** build_argv(arg_node_t* args, int* argc) {
 	}
 
 	return argv;
+}
+
+int handle_input_redirection(const char* input_redir) {
+    if (input_redir != NULL) {
+        int fd = open(input_redir, O_RDONLY);
+        if (fd < 0) {
+            fprintf(stderr, "No such file or directory\n");
+            return 0;
+        }
+        dup2(fd, STDIN_FILENO);
+        close(fd);
+    }
+    return 1;
+}
+
+int handle_output_redirection(const char* output_redir, int append) {
+    if (output_redir != NULL) {
+        int flags = O_WRONLY | O_CREAT | (append ? O_APPEND : O_TRUNC);
+        int fd = open(output_redir, flags, 0644);
+        if (fd < 0) {
+            fprintf(stderr, "Failed to open output file\n");
+            return 0;
+        }
+        dup2(fd, STDOUT_FILENO);
+        close(fd);
+    }
+    return 1;
 }
 
 int execute_builtins(shell_state_t *shell_state, atomic_cmd_t *cmd) {
@@ -72,9 +100,15 @@ int execute_external_command(atomic_cmd_t *cmd) {
     }
 
     if (pid == 0) {
+        if (!handle_input_redirection(cmd->input_redir)) {
+            exit(EXIT_FAILURE);
+        }
+        if (!handle_output_redirection(cmd->output_redir, cmd->append_output)) {
+            exit(EXIT_FAILURE);
+        }
         execvp(argv[0], argv);
 
-        fprintf(stderr, "Command not found!");
+        fprintf(stderr, "Command not found!\n");
         exit(EXIT_FAILURE);
     }
 
