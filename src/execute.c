@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdio.h>
 
+int isbuiltin(const char* cmd) {
+    return (strcmp(cmd, "hop") == 0 || strcmp(cmd, "reveal") == 0 || strcmp(cmd, "log") == 0);
+}
+
 char** build_argv(arg_node_t* args, int* argc) {
 	int count = 0;
 	arg_node_t* current = args;
@@ -131,7 +135,30 @@ void execute_shell_cmd(cmd_group_t *shell_cmd, shell_state_t *shell_state) {
 
         if (cmd != NULL) {
 
-            if (!execute_builtins(shell_state, cmd)) {
+            if (isbuiltin(cmd->args->arg)) {
+                int saved_in = dup(STDIN_FILENO);
+                int saved_out = dup(STDOUT_FILENO);
+
+                if (!handle_input_redirection(cmd->input_redir)) {
+                    close(saved_in);
+                    close(saved_out);
+                    return;
+                }
+                if (!handle_output_redirection(cmd->output_redir, cmd->append_output)) {
+                    close(saved_in);
+                    close(saved_out);
+                    return;
+                }
+
+                execute_builtins(shell_state, cmd);
+
+                dup2(saved_in, STDIN_FILENO);
+                dup2(saved_out, STDOUT_FILENO);
+
+                close(saved_in);
+                close(saved_out);
+            } 
+            else {
                 execute_external_command(cmd);
             }
         }
