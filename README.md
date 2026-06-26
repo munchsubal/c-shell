@@ -248,7 +248,6 @@ Hello
 
 ## Future Enhancements
 
-- Command pipelines (`|`)
 - Sequential execution (`;`)
 - Background execution (`&`)
 - Job control
