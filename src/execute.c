@@ -156,87 +156,89 @@ void execute_atomic(shell_state_t *shell_state, atomic_cmd_t *cmd) {
 }
 
 void handle_pipelines(shell_state_t *shell_state, atomic_cmd_t *cmd) {
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        fprintf(stderr, "pipe failed\n");
-        return;
-    }
 
-    atomic_cmd_t *cmd1 = cmd;
-    atomic_cmd_t *cmd2 = cmd->next;
+    const int MAX_PIPELINE_CMDS = 100;
 
-    pid_t pid1 = fork();
+    int prev_read_fd = -1;
 
-    if (pid1 < 0) {
-        fprintf(stderr, "fork failed\n");
-        close(pipefd[0]);
-        close(pipefd[1]);
-        return;
-    }
+    pid_t pids[MAX_PIPELINE_CMDS];
+    int cmd_count = 0;
 
-    if (pid1 == 0) {
+    atomic_cmd_t *curr = cmd;
 
-        if (cmd1->output_redir != NULL) {
-            handle_output_redirection(cmd1->output_redir, cmd1->append_output);
+    while (curr != NULL) {
+
+        int pipefd[2];
+
+        if (curr->next != NULL) {
+            if (pipe(pipefd) == -1) {
+                perror("pipe");
+                return;
+            }
+        }
+
+        pid_t pid = fork();
+
+        if (pid < 0) {
+            perror("fork");
+            return;
+        }
+
+        if (pid == 0) {
+
+            // ---------- stdin ----------
+
+            if (prev_read_fd != -1) {
+                dup2(prev_read_fd, STDIN_FILENO);
+                close(prev_read_fd);
+            }
+            else {
+                handle_input_redirection(curr->input_redir);
+            }
+
+            // ---------- stdout ----------
+
+            if (curr->next != NULL) {
+                dup2(pipefd[1], STDOUT_FILENO);
+                close(pipefd[1]);
+                close(pipefd[0]);
+            }
+            else {
+                handle_output_redirection(curr->output_redir, curr->append_output);
+            }
+
+            execute_atomic(shell_state, curr);
+
+            fflush(stdout);
+            exit(EXIT_SUCCESS);
+        }
+
+        // Parent
+
+        pids[cmd_count++] = pid;
+
+        if (prev_read_fd != -1) {
+            close(prev_read_fd);
+        }
+
+        if (curr->next != NULL) {
+            close(pipefd[1]);
+            prev_read_fd = pipefd[0];
         }
         else {
-            dup2(pipefd[1], STDOUT_FILENO);
+            prev_read_fd = -1;
         }
 
-        if (cmd1->input_redir != NULL) {
-            handle_input_redirection(cmd1->input_redir);
-        }
-
-        close(pipefd[0]);
-        close(pipefd[1]);
-
-        execute_atomic(shell_state, cmd1);
-
-        fflush(stdout);
-
-        exit(EXIT_SUCCESS);
+        curr = curr->next;
     }
 
-    pid_t pid2 = fork();
-
-    if (pid2 < 0) {
-        fprintf(stderr, "fork failed\n");
-        close(pipefd[0]);
-        close(pipefd[1]);
-        return;
+    if (prev_read_fd != -1) {
+        close(prev_read_fd);
     }
 
-    if (pid2 == 0) {
-
-        if (cmd2->input_redir != NULL) {
-            handle_input_redirection(cmd2->input_redir);
-        }
-        else {
-            dup2(pipefd[0], STDIN_FILENO);
-        }
-
-        if (cmd2->output_redir != NULL) {
-            handle_output_redirection(cmd2->output_redir, cmd2->append_output);
-        }
-
-        close(pipefd[0]);
-        close(pipefd[1]);
-
-        execute_atomic(shell_state, cmd2);
-
-        fflush(stdout);
-
-        exit(EXIT_SUCCESS);
+    for (int i = 0; i < cmd_count; i++) {
+        waitpid(pids[i], NULL, 0);
     }
-
-    // Parent does not use the pipe
-    close(pipefd[0]);
-    close(pipefd[1]);
-
-    waitpid(pid1, NULL, 0);
-    waitpid(pid2, NULL, 0);
-
-    return;
 }
 
 void execute_shell_cmd(cmd_group_t *shell_cmd, shell_state_t *shell_state) {
