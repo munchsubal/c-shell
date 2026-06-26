@@ -238,14 +238,14 @@ int builtins_reveal(shell_state_t* shell_state, const arg_node_t* args) { //equi
 
     if (!long_format) {
         for (int i = 0; i < count; i++) {
-            printf("%s ", entries[i]);
+            fprintf(stdout, "%s ", entries[i]);
             free(entries[i]);
         }
-        printf("\n");
+        fprintf(stdout, "\n");
     } 
     else {
         for (int i = 0; i < count; i++) {
-            printf("%s\n", entries[i]);
+            fprintf(stdout, "%s\n", entries[i]);
             free(entries[i]);
         }
     }
@@ -268,7 +268,7 @@ int builtins_log(shell_state_t* shell_state, const arg_node_t* args) {
 
         char line[4096];
         while (fgets(line, sizeof(line), history_file)) {
-            printf("%s", line);
+            fprintf(stdout, "%s", line);
         }
         fclose(history_file);
     } 

@@ -1,4 +1,0 @@
-reveal . > out.txt
-reveal > out.txt
-reveal < out.txt > in.txt
-reveal < in.txt
